@@ -1,166 +1,160 @@
-🚀 NebulaFlowEngine – Tredence AI Engineering Assignment
+NebulaFlowEngine – Tredence AI Engineering Assignment
 
-NebulaFlowEngine is a modular and extensible workflow/graph execution engine built with FastAPI and Python, designed as part of the Tredence AI Engineering Assignment.
-It demonstrates how to build:
+NebulaFlowEngine is a modular and extensible workflow/graph execution engine built with FastAPI and Python, created as part of the Tredence AI Engineering assignment.
+It demonstrates:
 
-A minimal, reusable workflow engine
+A minimal workflow execution engine
 
-State-driven node execution
+State-driven node transitions
 
-Conditional routing & looping
+Tool/function registry
 
-Tool registries
+Conditional routing and loop logic
 
-Clean API interfaces
+Clean REST API interfaces
 
-A complete example workflow (Option B: Summarization + Refinement) as required in the assignment.
+A complete implementation of Option B: Summarization + Refinement as required in the assignment
 
-This project uses a unique naming theme (NebulaFlow + Aurora workflow) but follows exactly the functional requirements specified in the assignment.
+This backend uses a structured architecture designed for clarity, modularity, and extensibility.
+
 Key Features
-🔹 1. FlowMap Graph Engine
+1. FlowMap Graph Engine
 
-Defines workflows as graphs:
+Workflows represented as directed graphs
 
-Nodes → specific processing steps
+Nodes mapped to Python functions (tools)
 
-Edges → transitions between steps
+Edges define node-to-node transitions
 
-Start node → entry point
+A shared state dictionary flows through all nodes
 
-Simple and powerful design using Python dictionaries.
+Looping and branching supported through a stop-flag mechanism
 
-🔹 2. NebulaTools Registry
+2. Tool Registry
 
-All node functions (tools) are registered globally.
+All node functions (tools) are registered globally in NebulaTools
 
-Tools operate on and update a shared state dictionary.
+Each tool reads from and writes to the shared state
 
-🔹 3. State-Based Execution
-
-Every node receives and returns the same state dictionary.
-
-State evolves as the workflow progresses.
-
-Looping/branching handled through state["stop"].
-
-🔹 4. In-Memory Runtime
+3. In-Memory Runtime
 
 Stores:
 
-Graphs (graph_id)
+Graph definitions (graph_id)
 
 Workflow runs (run_id)
 
-Current node, full state, and execution log
+Current node, workflow state, and execution logs
 
-🔹 5. FastAPI Endpoints
+4. FastAPI Endpoints
 
-REST APIs as required:
+POST /graph/create – Create a workflow graph
 
-POST /graph/create – Create a new workflow graph
+POST /graph/run – Execute a graph end-to-end
 
-POST /graph/run – Run a graph end-to-end
+GET /graph/state/{run_id} – Inspect workflow state and logs
 
-GET /graph/state/{run_id} – Inspect current state & logs
+GET /health – Basic health check
 
-GET /health – Simple health check
+POST /aurora/run – Run the Option B workflow without manually creating a graph
 
-POST /aurora/run – Run the Option-B summarization workflow
+5. Example Workflow (Option B: Summarization + Refinement)
 
-🔹 6. Example Workflow (Option B – Summarization + Refinement)
+Implements the required workflow:
 
-Implements the exact sequence required in the assignment:
+Split input text into chunks
 
-Split text into chunks
-
-Generate chunk summaries
+Generate mini-summaries
 
 Merge summaries
-Architecture OverviewNebulaFlowEngine/
-│
+
+Refine the merged summary
+
+Loop until the summary is shorter than a given threshold
+
+This demonstrates state evolution, transitions, looping, and conditional routing.
+
+Project Structure
+NebulaFlowEngine/
 ├── starlight_api/
-│   ├── main.py                   # FastAPI app & endpoints
-│   │
+│   ├── main.py                   # FastAPI routes and startup
 │   ├── comet_engine/
-│   │   ├── graph_core.py         # Engine executor
-│   │   ├── tool_registry.py      # Global registry for tools
-│   │   └── state_kernel.py       # In-memory graphs & runs
-│   │
+│   │   ├── graph_core.py         # Workflow executor
+│   │   ├── tool_registry.py      # Global tool registry
+│   │   └── state_kernel.py       # In-memory runtime & models
 │   ├── data_models/
-│   │   └── nebula_schemas.py     # Pydantic models
-│   │
+│   │   └── nebula_schemas.py     # Pydantic request/response models
 │   └── orbits/
-│       └── summary_orbit.py      # Option-B workflow tools + graph
-│
+│       └── summary_orbit.py      # Option B tools and graph definition
 └── README.md
-How to Run the Project Locally
-1️⃣ Install Dependencies
+
+How to Run Locally
+1. Install Dependencies
 pip install fastapi "uvicorn[standard]" pydantic
 
-2️⃣ Run the API Server
+2. Start the Server
 python -m uvicorn starlight_api.main:app --reload
 
-3️⃣ Verify the Server
+3. Verify Server
 
-Health Check
-👉 http://127.0.0.1:8000/health
+Health check:
+http://127.0.0.1:8000/health
 
-Response:
+Swagger Documentation (UI):
+http://127.0.0.1:8000/docs
 
-{ "status": "NebulaFlow is online" }
+ReDoc Documentation:
+http://127.0.0.1:8000/redoc
 
+Option B Workflow: AuroraText Condenser
 
-Full API Documentation (Swagger UI)
-👉 http://127.0.0.1:8000/docs
-
-Alternative Documentation (ReDoc)
-👉 http://127.0.0.1:8000/redoc
-
-🌟 Option B Workflow (AuroraText Condenser)
-
-This is the required sample workflow from the assignment.
+This workflow follows the assignment specification for summarization + refinement.
 
 Workflow Nodes
 Node	Tool Name	Purpose
-ShardSplitter	shard_splitter	Splits input text into chunks
-EchoSummoner	echo_summoner	Creates mini-summaries
-FusionWeaver	fusion_weaver	Merges mini-summaries
-ClarityPulse	clarity_pulse	Cleans/refines summary
-ThresholdGate	threshold_gate	Loop decision (stop or refine)
+ShardSplitter	shard_splitter	Splits text into word-based chunks
+EchoSummoner	echo_summoner	Generates per-chunk mini summaries
+FusionWeaver	fusion_weaver	Merges mini summaries into one string
+ClarityPulse	clarity_pulse	Cleans and trims the merged summary
+ThresholdGate	threshold_gate	Checks length and loops if needed
 Loop Logic
 
-If len(final_summary) > summary_limit, engine loops:
+If the summary exceeds the configured limit, execution loops:
 
 ThresholdGate → ClarityPulse → ThresholdGate → ...
 
 
-Loop ends when:
+Loop terminates when:
 
 state["stop"] = True
 
- How to Run Option B Workflow
+Running Option B Workflow
 
-Use Swagger UI /docs or send a POST request to:
-
+Endpoint:
 POST /aurora/run
-Example Body:
+
+Example request:
+
 {
-  "input_text": "Paste any long article or paragraph here...",
+  "input_text": "Paste any long article or text here.",
   "summary_limit": 250
 }
 
-Example Output:
 
-final_state.final_summary – refined summary
+Example response includes:
 
-run_id – execution ID
+final_state.final_summary
 
-log – detailed node-by-node trace
+run_id
 
-Generic Graph Engine Usage
-Create a Graph Manually
+Full node-by-node execution log
 
+Using the Generic Graph Engine
+1. Create a Graph
 POST /graph/create
+
+
+Example:
 
 {
   "name": "MyFlow",
@@ -174,58 +168,13 @@ POST /graph/create
   "start_node": "Start"
 }
 
-Run That Graph
-
+2. Run the Graph
 POST /graph/run
 
-{
-  "graph_id": "returned_graph_id_here",
-  "initial_state": {
-    "input_text": "Hello world!"
-  }
-}
-
-Check Run State
-
+3. Check State
 GET /graph/state/{run_id}
 
-Why This Project Meets the Assignment Requirements
 
-This backend satisfies all core requirements in the assignment summary:
 
-Minimal workflow / graph engine ✔
 
-Nodes with shared state ✔
 
-Edges defining transitions ✔
-
-Branching & looping ✔
-
-Tool registry ✔
-
-FastAPI endpoints ✔
-
-Complete example workflow (Option B) ✔
-
-Clean, modular folder structure ✔
-
-What Can Be Improved With More Time
-
-Add database persistence instead of in-memory runtime
-
-Add async support for long-running tools
-
-Add WebSocket live log streaming
-
-Add dynamic branching rules in JSON format
-
-Add more sample workflows (e.g., code review, anomaly detection)
-
-Conclusion
-
-NebulaFlowEngine showcases a clean and extensible approach to workflow orchestration using Python and FastAPI.
-It meets the assignment’s functional requirements while offering a unique naming system and modular architecture ideal for showcasing backend engineering capability.
-
-Refine the summary
-
-Loop until under a length threshold
